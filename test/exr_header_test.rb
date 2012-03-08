@@ -1,4 +1,4 @@
-require 'test/base'
+require File.join(File.dirname(__FILE__), 'base')
 
 
 class TestExrHeader < TestBase
