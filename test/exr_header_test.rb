@@ -36,8 +36,14 @@ class TestExrHeader < TestBase
 	 	 a = RubyEXR::ChannelArray.new
 	 	 
 	 	 File.open(fixture_path "channel_names.list").each_line do |line|
-	 	 	 a << RubyEXR::Channel.new line
+	 	 	 a.push RubyEXR::Channel.new line
 	 	 end
+	 	 assert a.size > 0
+	 	 
+	 	 # layers()
+	 	 l = a.layers
+	 	 assert l.size < a.size
+	 	 assert l.uniq! == nil
 	 	 
 	 	 
 	 	 

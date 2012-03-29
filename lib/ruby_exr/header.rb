@@ -3,7 +3,27 @@
 module RubyEXR
 		
 		
+	MAGIC = 0x01312f76
+	COMPRESSION = ['NO','RLE','ZIPS','ZIP','PIZ','PXR24','B44','B44A']
+	LINEORDER = ['INCRESING Y','DECREASING Y','RANDOM Y']
+	PIXELTYPE = ['UINT','HALF','FLOAT']
 	
+	COMPRESSION_NONE = 0
+	COMPRESSION_RLE = 1
+	COMPRESSION_ZIPS = 2
+	COMPRESSION_ZIP = 3
+	COMPRESSION_PIZ = 4
+	COMPRESSION_PXR24 = 5
+	COMPRESSION_B44 = 6
+	COMPRESSION_B44A = 7
+	
+	LINEORDER_INCREASING_Y = 0
+	LINEORDER_DECREASING_Y = 1
+	LINEORDER_RANDOM_Y = 2
+	
+	PIXELTYPE_UINT = 0
+	PIXELTYPE_HALF = 1
+	PIXELTYPE_FLOAT = 2
 	
 	class Channel
 		@@dot = '.'
@@ -56,33 +76,13 @@ module RubyEXR
 	class ChannelArray < Array
 		
 		def layers
-			
+			map do |c| c.layer end.uniq!
+			# yeah, this is why it ... 
+			#return list(set(map(self, lambda c: c.layer)))
 		end
 	end
 	
 	class Header
-		
-		@@MAGIC = 0x01312f76
-		@@COMPRESSION = ['NO','RLE','ZIPS','ZIP','PIZ','PXR24','B44','B44A']
-		@@LINEORDER = ['INCRESING Y','DECREASING Y','RANDOM Y']
-		@@PIXELTYPE = ['UINT','HALF','FLOAT']
-		
-		@@COMPRESSION_NONE = 0
-		@@COMPRESSION_RLE = 1
-		@@COMPRESSION_ZIPS = 2
-		@@COMPRESSION_ZIP = 3
-		@@COMPRESSION_PIZ = 4
-		@@COMPRESSION_PXR24 = 5
-		@@COMPRESSION_B44 = 6
-		@@COMPRESSION_B44A = 7
-		
-		@@LINEORDER_INCREASING_Y = 0
-		@@LINEORDER_DECREASING_Y = 1
-		@@LINEORDER_RANDOM_Y = 2
-		
-		@@PIXELTYPE_UINT = 0
-		@@PIXELTYPE_HALF = 1
-		@@PIXELTYPE_FLOAT = 2
 		
 		# initialize ourself with an optional file stream
 		def initialize(stream=nil)
