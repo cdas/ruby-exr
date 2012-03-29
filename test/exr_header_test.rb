@@ -32,4 +32,14 @@ class TestExrHeader < TestBase
 		 
 	 end # test_channel
 	
+	 def test_channelarray
+	 	 a = RubyEXR::ChannelArray.new
+	 	 
+	 	 File.open(fixture_path "channel_names.list").each_line do |line|
+	 	 	 a << RubyEXR::Channel.new line
+	 	 end
+	 	 
+	 	 
+	 	 
+	 end
 end #

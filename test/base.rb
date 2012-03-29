@@ -16,6 +16,10 @@ class TestBase < Test::Unit::TestCase
 	def test_nothing
 	end
 	
+	def fixture_path(name)
+		File.join(File.dirname(__FILE__), 'fixtures', name)
+	end
+	
 end # class TestBase
 
 
