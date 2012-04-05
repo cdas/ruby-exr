@@ -45,6 +45,22 @@ class TestExrHeader < TestBase
 	 	 assert l.size < a.size
 	 	 assert l.uniq! == nil
 	 	 
+	 	 df = a.default_channels
+	 	 assert df.size > 0 and df.at(0).is_a(RubyEXR::Channel)
+	 	 assert df.size == 3
+	 	 
+	 	 # middle
+	 	 prefix = 'beauty.'
+	 	 assert a.channels_with_prefix(prefix).size == 4
+	 	 
+	 	 prefix = 'doesnt exist'
+	 	 assert a.channels_with_prefix(prefix).size == 0
+	 	 
+	 	 # end position
+	 	 prefix = 'velocity'
+	 	 assert a.channels_with_prefix(prefix).size == 3
+	 	 
+	 	 
 	 	 
 	 	 
 	 end

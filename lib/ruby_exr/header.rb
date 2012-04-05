@@ -75,11 +75,32 @@ module RubyEXR
 	
 	class ChannelArray < Array
 		
+		
 		def layers
 			map do |c| c.layer end.uniq!
 			# yeah, this is why it ... 
 			#return list(set(map(self, lambda c: c.layer)))
 		end
+		
+		def default_channels
+			select do |c| c.layer.size == 0 end
+		end
+		
+		def channels_with_prefix prefix
+			# select do |c| c.name.start_with? prefix end
+			s = index {|c| c.name.start_with? prefix}
+			return Array.new() unless s
+			
+			e = size
+			for i in s...e
+				if !at(i).name.start_with? prefix
+					e = i
+					break
+				end
+			end
+			slice(s...e)
+		end
+		
 	end
 	
 	class Header
