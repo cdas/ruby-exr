@@ -46,7 +46,7 @@ class TestExrHeader < TestBase
 	 	 assert l.uniq! == nil
 	 	 
 	 	 df = a.default_channels
-	 	 assert df.size > 0 and df.at(0).is_a(RubyEXR::Channel)
+	 	 assert df.size > 0 and df.at(0).is_a?(RubyEXR::Channel)
 	 	 assert df.size == 3
 	 	 
 	 	 # middle
