@@ -60,8 +60,12 @@ class TestExrHeader < TestBase
 	 	 prefix = 'velocity'
 	 	 assert a.channels_with_prefix(prefix).size == 3
 	 	 
-	 	 
-	 	 
-	 	 
+	 end
+	 
+	 def test_header
+	 	 Dir.glob(fixture_path "*.exr").each do |f|
+	 	 	 h = RubyEXR::Header.new(File.open f)
+	 	 end
+	 	 # Dir.glob "fixtures/*.exr"
 	 end
 end #

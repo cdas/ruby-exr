@@ -105,6 +105,8 @@ module RubyEXR
 	
 	class Header
 		
+		@@null = "\0"
+		
 		# initialize ourself with an optional file stream
 		def initialize(stream=nil)
 			@header = Hash.new
@@ -130,8 +132,54 @@ module RubyEXR
 			@header.keys
 		end
 		
+		
+		def read stream
+			@header = Hash.new
+			
+			read_int_32 = lambda { stream.read(4).unpack("V").at 0 }
+			read_cstring = lambda do
+				out = ""
+				c = stream.read(1)
+				while c and c != @@null
+					out += c
+					c = stream.read(1)
+				end
+				raise IOError, "unexpected eof while reading c string" if stream.eof
+				return out
+			end
+			
+			id = read_int_32.call
+			version = read_int_32.call
+			
+			if id != MAGIC 
+				raise TypeError, "Invalid magic number: #{id} should be #{MAGIC}"
+			end
+			
+			until stream.eof
+				attr_name = read_cstring.call
+				# happens if we see the 0 that terminates the header
+				break if attr_name.size == 0
+				type_name = read_cstring.call
+				size = read_int_32.call
+				data = stream.read size
+				
+				if size == 0 or data.size != size
+					raise IOError, "unexpected end of file while reading datablock of #{attr_name}"
+				end
+				
+				@header[attr_name] = [type_name, _parse_data(data)]
+			end
+		end
+		
 		# end interface
 		
+		# utilities
+		
+		def _parse_data data
+			
+		end
+		
+		# end utilities
 		
 	end # class header
 end # end module ruby_exr
