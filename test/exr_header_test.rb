@@ -65,6 +65,8 @@ class TestExrHeader < TestBase
 	 def test_header
 	 	 Dir.glob(fixture_path "*.exr").each do |f|
 	 	 	 h = RubyEXR::Header.new(File.open f)
+	 	 	 
+	 	 	 assert h.attributes.size >= 3
 	 	 end
 	 	 # Dir.glob "fixtures/*.exr"
 	 end

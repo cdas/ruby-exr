@@ -135,26 +135,47 @@ module RubyEXR
 		
 		def read stream
 			@header = Hash.new
+			
+			read_cstring = lambda do
+				out = ""
+				c = stream.read(1)
+				while c and c != @@null
+					out += c
+					c = stream.read(1)
+				end
+				raise IOError, "unexpected eof while reading c string" if stream.eof
+				return out
+			end
 	
 			#unpack patterns:
 			# V - 32 bit integer
 			# Z - null-terminated String
+			s = stream.read(8)
+			if s and s.length == 8
+				id, version = s.unpack("VV")
+			else
+				raise TypeError, "Header corrupt"
+			end
 			
-			id, version = stream.read.unpack("VV") 
 			if id != MAGIC 
 				raise TypeError, "Invalid magic number: #{id} should be #{MAGIC}"
 			end
 			
 			# repeat for all attr
-			until stream.eof do 
-				a = stream.read.unpack("ZZV")
-				a.push stream.read a.at 2
-				# a = [attr_name, type_name, size, data]
-				if a.at 2 == 0 or a.at(3).size != a.at(2)
-					raise IOError, "unexpected end of file while reading datablock of #{attr_name}"
+			loop do 
+				attr_name, type_name = read_cstring, read_cstring
+				s = stream.read(8)
+				if s and s.length == 8
+					size = s.unpack("Z")
+				else
+					raise TypeError, "Header corrupt"
 				end
+				if not attr_name or type_name or size 
+					raise IOError, "unexpected end of file while reading datablock of #{attr_name}"
+				end 
+				data = stream
 		
-				@header[a.at 0] = [a.at(1), _parse_data(a.at 3)]
+				@header[attr_name] = [type_name, _parse_data(a.at 3)]
 			end
 			
 		end
