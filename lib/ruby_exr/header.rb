@@ -118,14 +118,16 @@ module RubyEXR
 		
 		
 		# Interface
+		# 
 		def attribute(name)
-			attribute_info name[1]
+			r = attribute_info(name)
+			r[1] if r
 		end
 		
 		# Returns a list of [attr_type_name, data] for the given attribute name
 		# Nil is returned if the attribute doesn't exist in the header.
 		def attribute_info(name)
-			@header[name]
+			@header[name] or @header[name.to_sym]
 		end
 		
 		def attributes
@@ -159,15 +161,14 @@ module RubyEXR
 				attr_name = read_cstring.call
 				# happens if we see the 0 that terminates the header
 				break if attr_name.size == 0
-				type_name = read_cstring.call
+				type_name = read_cstring.call.to_sym
 				size = read_int_32.call
 				data = stream.read size
 				
 				if size == 0 or data.size != size
 					raise IOError, "unexpected end of file while reading datablock of #{attr_name}"
 				end
-				
-				@header[attr_name] = [type_name, _parse_data(data)]
+				@header[attr_name.to_sym] = [type_name, _parse_data(type_name, data, size)]
 			end
 		end
 		
@@ -175,8 +176,41 @@ module RubyEXR
 		
 		# utilities
 		
-		def _parse_data data
-			
+		@@type_lut = Hash.new
+		# single return value
+		[[:int, 'V'], [:float, 'g'],
+		 [:double, 'G'], [:lineOrder, 'C'],
+		 [:compression, 'C']].each do |type, format|
+			@@type_lut[type] = lambda do |d| d.unpack(format)[0] end
+		end
+		
+		# multi-return value
+		[[:box2i, 'V4'], [:v2i, 'V2'],
+		 [:v2f, 'g2'], [:v3i, 'V3'],
+		 [:v3f, 'g3']].each do |type, format|
+		 	 @@type_lut[type] = lambda do |d| d.unpack(format) end
+		end
+		@@type_lut.default = lambda do |d| d end
+		@@type_lut[:chlist] = lambda do |data|
+			res = ChannelArray.new
+			max_string = 1024
+			last_byte_offset = data.size - 1
+			offset = 0
+			begin
+				name = data.unpack("@#{offset}Z#{max_string}")[0]
+				raise Exception.new "channel name too long: #{name}" if name.size >= max_string
+				offset += name.size + 1
+				
+				raise Exception.new 'invalid name' if name.size == 0
+				type, x_sample, y_sample, p_linear = data.unpack "@#{offset}V4"
+				offset += 16
+				res << Channel.new(name, type, x_sample, y_sample, p_linear)
+			end until offset == last_byte_offset
+			res
+		end
+		
+		def _parse_data(type, data, size)
+			@@type_lut[type].call data
 		end
 		
 		# end utilities

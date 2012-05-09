@@ -1,5 +1,8 @@
-require File.join(File.dirname(__FILE__), 'base')
-
+if RUBY_VERSION.to_f < 1.9
+	require File.join(File.dirname(__FILE__), 'base')
+else
+	require_relative 'base'
+end
 
 class TestExrHeader < TestBase
 	
@@ -65,6 +68,22 @@ class TestExrHeader < TestBase
 	 def test_header
 	 	 Dir.glob(fixture_path "*.exr").each do |f|
 	 	 	 h = RubyEXR::Header.new(File.open f)
+	 	 	 assert h.attributes.length > 4
+	 	 	 
+	 	 	 assert h.attribute(:channels) == h.attribute("channels")
+	 	 	 assert !h.attribute(:doesnt_exist)
+	 	 	 
+	 	 	 h.attributes.each do |attr|
+	 	 	 	type, data = h.attribute_info attr
+	 	 	 	if attr == :channels
+	 	 	 		assert data.class == RubyEXR::ChannelArray
+	 	 	 		data.layers.each do |layer|
+	 	 	 			data.channels_with_prefix(layer).each do |channel|
+	 	 					assert channel.is_a? RubyEXR::Channel
+	 	 	 			end # for each channel in layer
+	 	 	 		end # for each layer
+	 	 	 	end # attr is channels
+	 	 	 end
 	 	 end
 	 	 # Dir.glob "fixtures/*.exr"
 	 end
